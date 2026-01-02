@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: threads-db
+    image: postgres:15-alpine  # Use specific version + Alpine for smaller size
+    restart: unless-stopped    # Auto-restart on failure
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Optional: SQL scripts
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: threads
+      POSTGRES_DB: threads
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threads-network
+
+volumes:
+  postgres_data:
+    name: threads-postgres-data
+
+networks:
+  threads-network:
+    driver: bridge
